@@ -1,5 +1,7 @@
 # pg-backup
 
+**Русский** | [English](README.en.md)
+
 [![image](https://github.com/woB2K/pg-backup/actions/workflows/image.yml/badge.svg)](https://github.com/woB2K/pg-backup/actions/workflows/image.yml)
 
 Ночные бэкапы PostgreSQL и, если нужно, загруженных файлов на Google Drive или в любое другое хранилище. Перед отправкой всё шифруется через [restic](https://restic.net). Подключается к проекту одним сервисом в `docker-compose.yml`:
