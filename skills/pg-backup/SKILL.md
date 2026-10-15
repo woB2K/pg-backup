@@ -72,6 +72,7 @@ volumes:
 Adapt it:
 
 - Image tag = the PostgreSQL major version from step 1.
+- For production, pin the image by digest. The container holds the database password, the encryption key and the storage token, so a new image should arrive only through a reviewed change, not on the next pull of a floating tag. Find the latest release with `git ls-remote --tags https://github.com/woB2K/pg-backup`, get its digest with `docker buildx imagetools inspect ghcr.io/wob2k/pg-backup:<major>-<version> --format '{{json .Manifest.Digest}}'` and write `image: ghcr.io/wob2k/pg-backup:<major>-<version>@sha256:<digest>`. If Docker isn't available locally, keep `:<major>-<version>` and tell the user to pin the digest later.
 - `PGHOST` = the database service name. `PG*` values = the project's variable names.
 - No healthcheck on the database → `condition: service_started`, or add a `pg_isready` healthcheck if the project is fine with that.
 - Uploads: mount the same named volume or host folder into `backup` **without `:ro`**, under `/data/<name>`, and set `BACKUP_PATHS` to those paths separated by spaces. Paths can't contain spaces.

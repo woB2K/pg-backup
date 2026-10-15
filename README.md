@@ -97,6 +97,13 @@ volumes:
 Что подогнать под проект:
 
 - **Тег — мажорная версия PostgreSQL проекта.** База на `postgres:17` → `pg-backup:17`. `pg_dump` старее сервера снимать дамп откажется.
+- **На проде лучше закрепить образ по дайджесту.** Контейнер держит пароль базы, ключ шифрования и токен хранилища, а с плавающим тегом `:16` любая новая версия приедет при следующем pull. С дайджестом обновление станет явной правкой в твоём репо:
+
+  ```yaml
+  image: ghcr.io/wob2k/pg-backup:16-1.0.0@sha256:<дайджест>
+  ```
+
+  Последняя версия есть в [тегах репозитория](https://github.com/woB2K/pg-backup/tags), а дайджест показывает `docker buildx imagetools inspect ghcr.io/wob2k/pg-backup:16-1.0.0`. Тег в такой записи нужен только для читаемости: Docker скачает ровно образ с этим дайджестом.
 - `PGHOST` — имя сервиса базы в compose: `db`, `postgres`, `database` или как он у тебя называется.
 - `POSTGRES_*` — те имена переменных, которые уже есть в проекте.
 - `condition: service_healthy` работает, только если у базы есть healthcheck. Нет его — добавь или поставь `service_started`.
@@ -414,7 +421,7 @@ environment:
 | Проверить, что база восстанавливается | `docker compose run --rm backup restore check [snapshot]` |
 | Проверить, что файлы восстанавливаются | `docker compose run --rm backup restore files check [snapshot]` |
 | Логи ночных прогонов | `docker compose logs backup` |
-| Обновить образ | `docker compose pull backup && docker compose up -d backup` |
+| Обновить образ | Закреплён по дайджесту — поменяй тег и дайджест в compose. Потом `docker compose pull backup && docker compose up -d backup` |
 
 Без `snapshot` берётся последний снимок. ID показывает `restic snapshots`.
 
@@ -555,7 +562,7 @@ git tag v1.1.0 && git push origin v1.1.0
 | Тег | Что значит |
 |---|---|
 | `16` | Последний релиз для PostgreSQL 16. Обновляется при `docker compose pull` |
-| `16-1.1.0` | Зафиксированный релиз. Бери его, если хочешь обновляться только сменой тега |
+| `16-1.1.0` | Зафиксированный релиз. Бери его, если хочешь обновляться только сменой тега. Для прода — вместе с дайджестом, потому что тег можно перезаписать |
 
 Новая мажорная версия PostgreSQL — добавить её в матрицы `smoke` и `publish` в `.github/workflows/image.yml`.
 
