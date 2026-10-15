@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:${PG_MAJOR:-16}-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: smoke
+      POSTGRES_DB: app
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U app -d app]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  backup:
+    build:
+      context: ..
+      args:
+        PG_MAJOR: ${PG_MAJOR:-16}
+    init: true
+    environment:
+      PGHOST: db
+      PGUSER: app
+      PGPASSWORD: smoke
+      PGDATABASE: app
+      RESTIC_REPOSITORY: rclone::local:/var/lib/backup/repo
+      RESTIC_PASSWORD: smoke
+      BACKUP_SCHEDULE: '* * * * *'
+      BACKUP_PATHS: /data/uploads
+    volumes:
+      - state:/var/lib/backup
+      - uploads:/data/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  state:
+  uploads:
